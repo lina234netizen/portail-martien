@@ -1,0 +1,727 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Colonie Martienne Nouvelle Olympie - Visualisation Interactive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #1a0e0e 0%, #2d1b1b 50%, #4a2c2c 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .orbitron {
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .mars-bg {
+            background: radial-gradient(ellipse at center, #8B4513 0%, #CD853F 30%, #D2691E 60%, #A0522D 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 160px 30px, #fff, transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: twinkle 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        .dome {
+            border-radius: 50%;
+            border: 3px solid rgba(0, 255, 255, 0.6);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.4),
+                inset 0 0 20px rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dome:hover {
+            border-color: rgba(255, 165, 0, 0.8);
+            box-shadow: 
+                0 0 30px rgba(255, 165, 0, 0.6),
+                inset 0 0 30px rgba(255, 165, 0, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .dome-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .dome:hover .dome-image {
+            filter: brightness(1.2) contrast(1.1);
+        }
+        
+        .zone-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #FF6B35, #F7931E);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+            white-space: nowrap;
+        }
+        
+        .activity-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .activity-green { background: #10B981; }
+        .activity-blue { background: #3B82F6; }
+        .activity-orange { background: #F59E0B; }
+        .activity-purple { background: #8B5CF6; }
+        .activity-red { background: #EF4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(30, 30, 30, 0.9) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .council-meeting {
+            background: linear-gradient(45deg, #1E40AF, #3B82F6);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        }
+        
+        .emergency-alert {
+            background: linear-gradient(45deg, #DC2626, #EF4444);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            animation: emergency-blink 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes emergency-blink {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .daily-routine {
+            background: linear-gradient(45deg, #059669, #10B981);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            animation: routine-fade 4s ease-in-out infinite;
+        }
+        
+        @keyframes routine-fade {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00FFFF, transparent);
+            animation: data-flow 2s linear infinite;
+        }
+        
+        @keyframes data-flow {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .floating-icon {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #00FFFF;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #00FFFF;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00FFFF, #FF6B35);
+            border-radius: 4px;
+            animation: progress 3s ease-in-out infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mars-bg"></div>
+    <div class="stars"></div>
+    
+    <!-- En-tête -->
+    <header class="relative z-10 p-6">
+        <div class="container mx-auto">
+            <h1 class="orbitron text-4xl md:text-6xl font-black text-center mb-4 bg-gradient-to-r from-cyan-400 to-orange-400 bg-clip-text text-transparent">
+                COLONIE MARTIENNE NOUVELLE OLYMPIE
+            </h1>
+            <div class="text-center text-xl mb-6">
+                <span class="text-cyan-300">Sol 2157</span> • 
+                <span class="text-orange-300">État Opérationnel : OPTIMAL</span>
+            </div>
+            
+            <!-- Statistiques de Population -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="stats-card text-center">
+                    <div class="orbitron text-3xl font-bold text-cyan-400" id="total-population">115</div>
+                    <div class="text-gray-300">Total Colons</div>
+                </div>
+                <div class="stats-card text-center">
+                    <div class="orbitron text-3xl font-bold text-blue-400" id="scientists">75</div>
+                    <div class="text-gray-300">Scientifiques</div>
+                </div>
+                <div class="stats-card text-center">
+                    <div class="orbitron text-3xl font-bold text-orange-400" id="citizens">40</div>
+                    <div class="text-gray-300">Citoyens</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Visualisation Principale de la Colonie -->
+    <main class="relative z-10 p-6">
+        <div class="container mx-auto max-w-7xl">
+            
+            <!-- Disposition de la Colonie -->
+            <div class="relative grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12" id="colony-layout">
+                
+                <!-- Dômes d'Habitation -->
+                <div class="lg:col-span-1 space-y-8">
+                    <div class="dome w-64 h-64 mx-auto relative" onclick="openModal('habitat-modal')">
+                        <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/28019d0a-ca63-49c7-807a-1ee48aeaf2b5/habitat_dome_interior_20251004132343_1.png" alt="Dôme d'Habitation" class="dome-image">
+                        <div class="activity-indicator activity-green"></div>
+                        <div class="zone-label">DÔMES D'HABITATION</div>
+                        <div class="floating-icon" style="top: 20%; left: 20%;">🏠</div>
+                        <div class="floating-icon" style="top: 60%; right: 20%;">🏥</div>
+                    </div>
+                    
+                    <div class="dome w-48 h-48 mx-auto relative" onclick="openModal('culture-modal')">
+                        <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/05d53033-1272-43a2-88f1-8ded0c69c824/culture_education_dome_20251004132433_1.png" alt="Culture & Éducation" class="dome-image">
+                        <div class="activity-indicator activity-purple"></div>
+                        <div class="zone-label">CULTURE & ÉDUCATION</div>
+                        <div class="floating-icon" style="top: 30%; left: 30%;">📚</div>
+                        <div class="floating-icon" style="top: 50%; right: 25%;">🎭</div>
+                    </div>
+                </div>
+                
+                <!-- Dôme Agricole Central -->
+                <div class="lg:col-span-1 flex items-center justify-center">
+                    <div class="dome w-80 h-80 relative" onclick="openModal('agriculture-modal')">
+                        <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/187d7acc-d7ff-4be8-abf5-3a5a904d4211/agricultural_dome_20251004132359_1.png" alt="Dôme Agricole" class="dome-image">
+                        <div class="activity-indicator activity-green"></div>
+                        <div class="zone-label">DÔME AGRICOLE</div>
+                        <div class="floating-icon" style="top: 15%; left: 25%;">🌱</div>
+                        <div class="floating-icon" style="top: 40%; right: 20%;">💧</div>
+                        <div class="floating-icon" style="bottom: 25%; left: 30%;">🤖</div>
+                    </div>
+                </div>
+                
+                <!-- Dômes Technologie & Administration -->
+                <div class="lg:col-span-1 space-y-8">
+                    <div class="dome w-64 h-64 mx-auto relative" onclick="openModal('technology-modal')">
+                        <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/21d850ba-072b-4920-b415-e55feb8c394d/workshop_technology_dome_20251004132416_1.png" alt="Dôme Technologique" class="dome-image">
+                        <div class="activity-indicator activity-blue"></div>
+                        <div class="zone-label">TECHNOLOGIE & ATELIER</div>
+                        <div class="floating-icon" style="top: 25%; left: 25%;">⚙️</div>
+                        <div class="floating-icon" style="top: 55%; right: 20%;">🤖</div>
+                    </div>
+                    
+                    <div class="dome w-48 h-48 mx-auto relative" onclick="openModal('admin-modal')">
+                        <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/b717f85e-5854-4643-97ae-78dc6aef0342/administrative_dome_20251004132450_1.png" alt="Dôme Administratif" class="dome-image">
+                        <div class="activity-indicator activity-orange"></div>
+                        <div class="zone-label">ADMINISTRATION</div>
+                        <div class="floating-icon" style="top: 30%; left: 30%;">🏛️</div>
+                        <div class="floating-icon" style="top: 50%; right: 25%;">📊</div>
+                    </div>
+                </div>
+                
+                <!-- Lignes de Connexion -->
+                <div class="connection-line" style="top: 50%; left: 20%; width: 15%;"></div>
+                <div class="connection-line" style="top: 30%; left: 35%; width: 15%;"></div>
+                <div class="connection-line" style="top: 70%; left: 35%; width: 15%;"></div>
+                <div class="connection-line" style="top: 50%; right: 20%; width: 15%;"></div>
+            </div>
+            
+            <!-- Tableau de Bord des Activités Quotidiennes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <div class="stats-card">
+                    <h3 class="orbitron text-xl font-bold mb-4 text-cyan-400">🏛️ GOUVERNANCE</h3>
+                    <div id="council-activities">
+                        <div class="council-meeting">
+                            <div class="font-semibold">Réunion du Conseil Citoyen</div>
+                            <div class="text-sm text-gray-300">Discussion sur l'allocation des ressources</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                        </div>
+                        <div class="council-meeting">
+                            <div class="font-semibold">Session du Conseil Scientifique</div>
+                            <div class="text-sm text-gray-300">Vote sur les priorités de recherche</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 60%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <h3 class="orbitron text-xl font-bold mb-4 text-green-400">🔄 OPÉRATIONS QUOTIDIENNES</h3>
+                    <div id="daily-routines">
+                        <div class="daily-routine">
+                            <div class="font-semibold">🌱 Surveillance Agricole</div>
+                            <div class="text-sm text-gray-300">Rendement des cultures : +12% ce cycle</div>
+                        </div>
+                        <div class="daily-routine">
+                            <div class="font-semibold">🏥 Examens Médicaux</div>
+                            <div class="text-sm text-gray-300">15 colons programmés aujourd'hui</div>
+                        </div>
+                        <div class="daily-routine">
+                            <div class="font-semibold">🎓 Sessions Éducatives</div>
+                            <div class="text-sm text-gray-300">Cours de géologie martienne en cours</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <h3 class="orbitron text-xl font-bold mb-4 text-red-400">⚠️ ALERTES & ÉTAT</h3>
+                    <div id="alerts">
+                        <div class="emergency-alert" style="display: none;">
+                            <div class="font-semibold">🚨 PROTOCOLE D'URGENCE</div>
+                            <div class="text-sm text-gray-300">Tempête de poussière approche - mode abri</div>
+                        </div>
+                        <div class="daily-routine">
+                            <div class="font-semibold">✅ Tous Systèmes Nominaux</div>
+                            <div class="text-sm text-gray-300">Support vie : 100% opérationnel</div>
+                        </div>
+                        <div class="daily-routine">
+                            <div class="font-semibold">🔋 État du Réseau Électrique</div>
+                            <div class="text-sm text-gray-300">Efficacité solaire : 94%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Modales pour chaque zone -->
+    
+    <!-- Modale Habitation -->
+    <div id="habitat-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('habitat-modal')">&times;</span>
+            <h2 class="orbitron text-3xl font-bold mb-4 text-cyan-400">🏠 DÔMES D'HABITATION</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/28019d0a-ca63-49c7-807a-1ee48aeaf2b5/habitat_dome_interior_20251004132343_1.png" alt="Intérieur Habitation" class="w-full rounded-lg mb-4">
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Espaces de Vie & Installations Médicales</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🏠 <strong>115 Quartiers Individuels</strong> - Espaces privés pour tous les colons</li>
+                        <li>🍽️ <strong>Zones de Restauration Communes</strong> - Espaces sociaux pour les repas</li>
+                        <li>🏥 <strong>Centre Médical</strong> - Installation de santé complète avec soins d'urgence</li>
+                        <li>💤 <strong>Repos & Loisirs</strong> - Zones de détente et installations sportives</li>
+                        <li>🌿 <strong>Purification de l'Air</strong> - Murs végétaux intégrés pour la production d'oxygène</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="text-sm text-cyan-300">Activité Actuelle :</div>
+                        <div>Préparation du repas du soir dans les cuisines communes</div>
+                        <div>Personnel médical effectuant des examens de santé de routine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modale Agriculture -->
+    <div id="agriculture-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('agriculture-modal')">&times;</span>
+            <h2 class="orbitron text-3xl font-bold mb-4 text-green-400">🌱 DÔME AGRICOLE</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/187d7acc-d7ff-4be8-abf5-3a5a904d4211/agricultural_dome_20251004132359_1.png" alt="Intérieur Agricole" class="w-full rounded-lg mb-4">
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Fermes Hydroponiques & Systèmes d'Eau</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🥬 <strong>Systèmes de Culture Verticale</strong> - Laitue, tomates, pommes de terre</li>
+                        <li>💧 <strong>Usine de Recyclage d'Eau</strong> - 99,9% d'efficacité de récupération d'eau</li>
+                        <li>🤖 <strong>Moissonneuses Automatisées</strong> - Systèmes robotiques de collecte des cultures</li>
+                        <li>🔬 <strong>Recherche Botanique</strong> - Scientifiques développant des cultures adaptées à Mars</li>
+                        <li>📊 <strong>Surveillance du Rendement</strong> - Analyse en temps réel de la santé des cultures</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="text-sm text-green-300">Production Actuelle :</div>
+                        <div>Production alimentaire quotidienne : 125kg de produits frais</div>
+                        <div>Recyclage d'eau : 500L traités par heure</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modale Technologie -->
+    <div id="technology-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('technology-modal')">&times;</span>
+            <h2 class="orbitron text-3xl font-bold mb-4 text-blue-400">⚙️ TECHNOLOGIE & ATELIER</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/21d850ba-072b-4920-b415-e55feb8c394d/workshop_technology_dome_20251004132416_1.png" alt="Intérieur Technologique" class="w-full rounded-lg mb-4">
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Robotique & Fabrication</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🤖 <strong>Robots Industriels</strong> - Systèmes de fabrication et d'assemblage</li>
+                        <li>🔧 <strong>Installation d'Impression 3D</strong> - Production de composants à la demande</li>
+                        <li>🔬 <strong>Laboratoires de Recherche</strong> - Science des matériaux avancée</li>
+                        <li>💻 <strong>Informatique Quantique</strong> - Optimisation des systèmes de la colonie</li>
+                        <li>🛠️ <strong>Atelier de Maintenance</strong> - Réparation et amélioration d'équipements</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="text-sm text-blue-300">Projets Actuels :</div>
+                        <div>Fabrication de nouveaux modules d'habitation</div>
+                        <div>Développement de systèmes de support vie améliorés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modale Culture -->
+    <div id="culture-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('culture-modal')">&times;</span>
+            <h2 class="orbitron text-3xl font-bold mb-4 text-purple-400">🎭 CULTURE & ÉDUCATION</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/05d53033-1272-43a2-88f1-8ded0c69c824/culture_education_dome_20251004132433_1.png" alt="Intérieur Culturel" class="w-full rounded-lg mb-4">
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Écoles & Loisirs</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🎓 <strong>Installations Éducatives</strong> - Systèmes d'apprentissage holographiques</li>
+                        <li>📚 <strong>Bibliothèque Numérique</strong> - Archive complète des connaissances terrestres</li>
+                        <li>🎨 <strong>Studios d'Art</strong> - Espaces d'expression créative</li>
+                        <li>🏃 <strong>Gymnase</strong> - Fitness adapté à la gravité martienne</li>
+                        <li>🎪 <strong>Théâtre Communautaire</strong> - Spectacles culturels et événements</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="text-sm text-purple-300">Activités d'Aujourd'hui :</div>
+                        <div>Enfants apprenant la géologie martienne</div>
+                        <div>Concert du soir par les musiciens de la colonie</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modale Administration -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('admin-modal')">&times;</span>
+            <h2 class="orbitron text-3xl font-bold mb-4 text-orange-400">🏛️ ADMINISTRATION</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <img src="https://skyagent-artifacts.skywork.ai/image/1974465303942983680/b717f85e-5854-4643-97ae-78dc6aef0342/administrative_dome_20251004132450_1.png" alt="Intérieur Administratif" class="w-full rounded-lg mb-4">
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Gouvernance & Communication</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>🏛️ <strong>Chambre du Conseil Citoyen</strong> - 40 représentants citoyens</li>
+                        <li>🔬 <strong>Salle du Conseil Scientifique</strong> - 75 membres scientifiques</li>
+                        <li>📡 <strong>Centre de Communication Terre</strong> - Communications spatiales profondes</li>
+                        <li>📊 <strong>Systèmes de Gestion de Colonie</strong> - Suivi des ressources et de la population</li>
+                        <li>⚠️ <strong>Coordination d'Urgence</strong> - Protocoles de réponse aux crises</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="text-sm text-orange-300">Sessions Actuelles :</div>
+                        <div>Vote sur les nouvelles priorités de recherche</div>
+                        <div>Planification de la prochaine mission d'approvisionnement terrestre</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Logique d'animation et d'interaction
+        let activityCycle = 0;
+        let emergencyActive = false;
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Fermer la modale en cliquant à l'extérieur
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+        
+        // Simuler les activités quotidiennes
+        function updateDailyActivities() {
+            const activities = [
+                {
+                    title: "🌅 Changement d'Équipe Matinal",
+                    desc: "L'équipe de nuit passe le relais à l'équipe de jour"
+                },
+                {
+                    title: "🔬 Sessions de Recherche",
+                    desc: "Scientifiques analysant des échantillons de sol"
+                },
+                {
+                    title: "🏗️ Travaux de Construction",
+                    desc: "Extension du module d'habitation C"
+                },
+                {
+                    title: "🍽️ Préparation des Repas",
+                    desc: "Chefs préparant le dîner communautaire"
+                },
+                {
+                    title: "🎓 Temps d'Éducation",
+                    desc: "Enfants apprenant l'histoire de la Terre"
+                },
+                {
+                    title: "🌙 Loisirs du Soir",
+                    desc: "Soirée cinéma communautaire au théâtre"
+                }
+            ];
+            
+            const routineContainer = document.getElementById('daily-routines');
+            const currentActivity = activities[activityCycle % activities.length];
+            
+            routineContainer.innerHTML = `
+                <div class="daily-routine">
+                    <div class="font-semibold">${currentActivity.title}</div>
+                    <div class="text-sm text-gray-300">${currentActivity.desc}</div>
+                </div>
+                <div class="daily-routine">
+                    <div class="font-semibold">🤖 Maintenance Robotique</div>
+                    <div class="text-sm text-gray-300">Vérification systèmes automatisés : ${Math.floor(Math.random() * 20 + 80)}% terminé</div>
+                </div>
+                <div class="daily-routine">
+                    <div class="font-semibold">💧 Systèmes d'Eau</div>
+                    <div class="text-sm text-gray-300">Efficacité recyclage : ${Math.floor(Math.random() * 5 + 95)}%</div>
+                </div>
+            `;
+            
+            activityCycle++;
+        }
+        
+        // Simuler les réunions de conseil
+        function updateCouncilActivities() {
+            const councilTopics = [
+                "Allocation des ressources pour le prochain trimestre",
+                "Protocoles d'intégration des nouveaux colons",
+                "Session de vote sur les priorités de recherche",
+                "Planification d'exercice de réponse d'urgence",
+                "Organisation d'événements culturels",
+                "Calendrier de communication avec la Terre"
+            ];
+            
+            const scientificTopics = [
+                "Proposition de recherche sur la terraformation de Mars",
+                "Révision de l'efficacité du processeur atmosphérique",
+                "Planification de mission d'étude géologique",
+                "Études d'optimisation du rendement des cultures",
+                "Recherche médicale sur les effets de la gravité martienne",
+                "Évaluations de mise à niveau technologique"
+            ];
+            
+            const councilContainer = document.getElementById('council-activities');
+            const citizenTopic = councilTopics[Math.floor(Math.random() * councilTopics.length)];
+            const scientificTopic = scientificTopics[Math.floor(Math.random() * scientificTopics.length)];
+            
+            councilContainer.innerHTML = `
+                <div class="council-meeting">
+                    <div class="font-semibold">Réunion du Conseil Citoyen</div>
+                    <div class="text-sm text-gray-300">${citizenTopic}</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${Math.floor(Math.random() * 40 + 40)}%;"></div></div>
+                </div>
+                <div class="council-meeting">
+                    <div class="font-semibold">Session du Conseil Scientifique</div>
+                    <div class="text-sm text-gray-300">${scientificTopic}</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${Math.floor(Math.random() * 40 + 30)}%;"></div></div>
+                </div>
+            `;
+        }
+        
+        // Simuler les alertes d'urgence
+        function toggleEmergency() {
+            const alertContainer = document.getElementById('alerts');
+            const emergencyDiv = alertContainer.querySelector('.emergency-alert');
+            
+            if (!emergencyActive && Math.random() < 0.1) { // 10% de chance d'urgence
+                emergencyActive = true;
+                emergencyDiv.style.display = 'block';
+                setTimeout(() => {
+                    emergencyActive = false;
+                    emergencyDiv.style.display = 'none';
+                }, 8000); // L'urgence dure 8 secondes
+            }
+        }
+        
+        // Mettre à jour les compteurs de population avec de légères variations
+        function updatePopulationStats() {
+            // Simuler des changements mineurs de population (personnes dans différentes zones)
+            const baseScientists = 75;
+            const baseCitizens = 40;
+            const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, ou 1
+            
+            document.getElementById('scientists').textContent = baseScientists + variation;
+            document.getElementById('citizens').textContent = baseCitizens - variation;
+            document.getElementById('total-population').textContent = baseScientists + baseCitizens;
+        }
+        
+        // Initialiser les animations
+        setInterval(updateDailyActivities, 5000); // Mise à jour toutes les 5 secondes
+        setInterval(updateCouncilActivities, 8000); // Mise à jour toutes les 8 secondes
+        setInterval(toggleEmergency, 3000); // Vérifier l'urgence toutes les 3 secondes
+        setInterval(updatePopulationStats, 7000); // Mise à jour population toutes les 7 secondes
+        
+        // Chargement initial
+        updateDailyActivities();
+        updateCouncilActivities();
+        
+        // Ajouter des raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                // Fermer toutes les modales
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+        });
+        
+        // Ajouter des effets de survol pour les dômes
+        document.querySelectorAll('.dome').forEach(dome => {
+            dome.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05) rotate(1deg)';
+            });
+            
+            dome.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+        
+        console.log('🚀 Colonie Martienne Nouvelle Olympie - Visualisation Interactive Chargée');
+        console.log('👥 Population : 115 (75 Scientifiques, 40 Citoyens)');
+        console.log('🏠 5 Zones Principales : Habitation, Agriculture, Technologie, Culture, Administration');
+        console.log('🔴 Bienvenue sur Mars ! Cliquez sur n\'importe quel dôme pour explorer.');
+    </script>
+</body>
+</html>
